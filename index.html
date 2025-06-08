@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Selettore Girone</title>
+  <style>
+    :root {
+      --grad: linear-gradient(135deg,#ff914d 0%,#ff6300 100%);
+      --text: #000;
+      --radius: 12px;
+      font-family: Inter,system-ui,sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+    }
+    .stage-bar {
+      width: 100%;
+      max-width: 640px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      overflow: visible;
+    }
+    .stage-bar__btn {
+      width: 100%;
+      background: var(--grad);
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 0;
+      letter-spacing: .3px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      border-radius: var(--radius);
+      transition: background .2s;
+    }
+    .stage-bar__btn:hover {
+      background: linear-gradient(135deg,#ff9e6e 0%,#ff7a00 100%);
+    }
+    .stage-bar__btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform .3s ease;
+    }
+    .stage-bar.open .stage-bar__btn svg {
+      transform: rotate(180deg);
+    }
+    .dropdown {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      width: 100%;
+      background: var(--grad);
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+    .stage-bar.open .dropdown {
+      display: block;
+    }
+    .dropdown__item {
+      padding: 8px 0;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .dropdown__item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stage-bar" id="bar">
+    <div class="stage-bar__btn" id="toggle">
+      <span id="label">Girone A</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="#000" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="dropdown" id="menu"></div>
+  </div>
+
+  <script>
+    const bar    = document.getElementById('bar');
+    const label  = document.getElementById('label');
+    const menu   = document.getElementById('menu');
+    const toggle = document.getElementById('toggle');
+    const post   = g => parent.postMessage({ girone: g }, '*');
+
+    // Comunica stato dropdown
+    function postMenuState() {
+      const open = bar.classList.contains('open');
+      parent.postMessage({ menuOpen: open }, '*');
+    }
+
+    // Costruisci voce menu in minuscolo tranne G
+    function buildMenu(curr) {
+      const other = curr === 'A' ? 'B' : 'A';
+      menu.innerHTML = `<div class="dropdown__item" data-g="${other}">Girone ${other}</div>`;
+    }
+
+    // Toggle dropdown
+    toggle.addEventListener('click', () => {
+      bar.classList.toggle('open');
+      postMenuState();
+    });
+
+    // Seleziona voce
+    menu.addEventListener('click', e => {
+      const g = e.target.dataset.g;
+      if (!g) return;
+      label.textContent = 'Girone ' + g;
+      bar.classList.remove('open');
+      buildMenu(g);
+      post(g);
+      postMenuState();
+    });
+
+    // Init
+    buildMenu('A');
+    post('A');
+    postMenuState();
+  </script>
+
+</body>
+</html>
